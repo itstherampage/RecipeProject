@@ -1,3 +1,4 @@
+import { async } from 'regenerator-runtime';
 import { TIMEOUT_TIMER } from './config.js';
 import 'regenerator-runtime/runtime.js';
 const timeout = function (s) {
@@ -8,9 +9,19 @@ const timeout = function (s) {
   });
 };
 
-export const getJSON = async function (url) {
+export const AJAX = async function (url, uploadData = undefined) {
   try {
-    const res = await Promise.race([fetch(url), timeout(TIMEOUT_TIMER)]);
+    const fetchPro = uploadData
+      ? fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(uploadData),
+        })
+      : fetch(url);
+
+    const res = await Promise.race([fetchPro, timeout(TIMEOUT_TIMER)]);
     const data = await res.json();
 
     if (!res.ok) {
@@ -21,3 +32,39 @@ export const getJSON = async function (url) {
     throw error; //throw the error again so it can be handled in model.js
   }
 };
+
+// export const getJSON = async function (url) {
+//   try {
+//     const fetchPro = fetch(url);
+//     const res = await Promise.race([fetchPro, timeout(TIMEOUT_TIMER)]);
+//     const data = await res.json();
+
+//     if (!res.ok) {
+//       throw new Error(`${data.message} \nStatus code (${res.status})`);
+//     }
+//     return data;
+//   } catch (error) {
+//     throw error; //throw the error again so it can be handled in model.js
+//   }
+// };
+
+// export const sendJSON = async function (url, uploadData) {
+//   try {
+//     const fetchPro = fetch(url, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify(uploadData),
+//     });
+//     const res = await Promise.race([fetchPro, timeout(TIMEOUT_TIMER)]);
+//     const data = await res.json();
+
+//     if (!res.ok) {
+//       throw new Error(`${data.message} \nStatus code (${res.status})`);
+//     }
+//     return data;
+//   } catch (error) {
+//     throw error; //throw the error again so it can be handled in model.js
+//   }
+// };
